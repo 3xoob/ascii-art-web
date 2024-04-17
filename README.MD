@@ -1,7 +1,5 @@
 # Ascii Art Web
 
-## Hello Auditor
-
 ## Description
 Ascii Art Web is a web application designed to enable users to craft ASCII art employing various banners (STANDARD, SHADOW, and THINKERTOY). Implemented in Go, the server furnishes a straightforward and interactive graphical user interface (GUI) for generating and showcasing ASCII art.
 
