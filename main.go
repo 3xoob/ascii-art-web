@@ -22,36 +22,41 @@ func main() {
 
 func GetHandler(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/" {
-		errorHandler(w, r, http.StatusNotFound)
+		errorHandler(w, r, http.StatusNotFound, "")
 		return
 	}
 	if r.Method != "GET" {
-		errorHandler(w, r, http.StatusMethodNotAllowed)
+		errorHandler(w, r, http.StatusMethodNotAllowed, "")
 		return
 	}
 
 	tmpl, err := template.ParseFiles("Templates/index.html")
 	if err != nil {
-		errorHandler(w, r, http.StatusInternalServerError)
+		errorHandler(w, r, http.StatusInternalServerError, "")
 		return
 	}
 
 	err = tmpl.Execute(w, output)
 	if err != nil {
-		errorHandler(w, r, http.StatusInternalServerError)
+		errorHandler(w, r, http.StatusInternalServerError, "")
 	}
 }
 
 func PostHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
-		errorHandler(w, r, http.StatusMethodNotAllowed)
+		errorHandler(w, r, http.StatusMethodNotAllowed, "")
 		return
 	}
 
 	input := r.FormValue("text")
 	font := r.FormValue("fonts")
-	if input == "" || !AsciiValidation(input) {
-		errorHandler(w, r, http.StatusBadRequest)
+	input = TextCleaner(input)
+	if input == "" {
+		errorHandler(w, r, http.StatusBadRequest, "Please make sure you enter a text")
+		return
+	}
+	if font == "" {
+		errorHandler(w, r, http.StatusBadRequest, "Please make sure you select a font")
 		return
 	}
 
@@ -59,14 +64,14 @@ func PostHandler(w http.ResponseWriter, r *http.Request) {
 
 	output, err = OutputArt(input, font)
 	if err != nil {
-		errorHandler(w, r, http.StatusBadRequest)
+		errorHandler(w, r, http.StatusBadRequest, "Please make sure you select a font")
 		return
 	}
 
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
-func errorHandler(w http.ResponseWriter, r *http.Request, statusCode int) {
+func errorHandler(w http.ResponseWriter, r *http.Request, statusCode int, errM string) {
 	var errorMessage string
 
 	switch statusCode {
@@ -76,6 +81,9 @@ func errorHandler(w http.ResponseWriter, r *http.Request, statusCode int) {
 	case http.StatusBadRequest:
 		//400
 		errorMessage = "Bad request"
+		if errM != "" {
+			errorMessage += ", " + errM
+		}
 	case http.StatusInternalServerError:
 		//500
 		errorMessage = "Internal server error"
@@ -104,14 +112,14 @@ func errorHandler(w http.ResponseWriter, r *http.Request, statusCode int) {
 	tmpl.Execute(w, data)
 }
 
-func AsciiValidation(text string) bool {
-	for _, ch := range text {
-		if ch < 32 || ch > 126 {
-			return false
-		}
-	}
-	return true
-}
+// func AsciiValidation(text string) bool {
+// 	for _, ch := range text {
+// 		if ch < 32 || ch > 126 {
+// 			return false
+// 		}
+// 	}
+// 	return true
+// }
 
 func openBrowser(URL string) {
 	err := open.Run(URL)
@@ -127,7 +135,6 @@ func TextCleaner(text1 string) string {
 }
 
 func OutputArt(inputTXT, font string) (string, error) {
-	inputTXT = TextCleaner(inputTXT)
 	outputstr := ""
 	file, err := os.ReadFile(font)
 	if err != nil {
