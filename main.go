@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"html/template"
 	"net/http"
 	"os"
@@ -11,7 +10,7 @@ import (
 )
 
 var output string
-var err error
+var err string
 
 func main() {
 	http.HandleFunc("/", GetHandler)
@@ -55,16 +54,12 @@ func PostHandler(w http.ResponseWriter, r *http.Request) {
 		errorHandler(w, r, http.StatusBadRequest, "Please make sure you enter a text")
 		return
 	}
-	if font == "" {
-		errorHandler(w, r, http.StatusBadRequest, "Please make sure you select a font")
-		return
-	}
 
 	font = "Fonts/" + font + ".txt"
 
 	output, err = OutputArt(input, font)
-	if err != nil {
-		errorHandler(w, r, http.StatusBadRequest, "Please make sure you select a font")
+	if err != "" {
+		errorHandler(w, r, http.StatusBadRequest, err)
 		return
 	}
 
@@ -82,7 +77,7 @@ func errorHandler(w http.ResponseWriter, r *http.Request, statusCode int, errM s
 		//400
 		errorMessage = "Bad request"
 		if errM != "" {
-			errorMessage += ", " + errM
+			errorMessage += ": " + errM
 		}
 	case http.StatusInternalServerError:
 		//500
@@ -112,33 +107,22 @@ func errorHandler(w http.ResponseWriter, r *http.Request, statusCode int, errM s
 	tmpl.Execute(w, data)
 }
 
-// func AsciiValidation(text string) bool {
-// 	for _, ch := range text {
-// 		if ch < 32 || ch > 126 {
-// 			return false
-// 		}
-// 	}
-// 	return true
-// }
-
 func openBrowser(URL string) {
 	err := open.Run(URL)
 	if err != nil {
 		panic(err)
 	}
 }
-func TextCleaner(text1 string) string {
-	if strings.Contains(text1, "\r\n") {
-		return strings.ReplaceAll(text1, "\r\n", "\\n")
-	}
-	return text1
+func TextCleaner(inText string) string {
+	inText = strings.ReplaceAll(inText, "\\t", "    ")
+	return strings.ReplaceAll(inText, "\r", "\n")
 }
 
-func OutputArt(inputTXT, font string) (string, error) {
+func OutputArt(inputTXT, font string) (string, string) {
 	outputstr := ""
 	file, err := os.ReadFile(font)
 	if err != nil {
-		return "", err
+		return "", "Please make sure you select a font"
 	}
 	var art []string
 	m := ""
@@ -150,15 +134,18 @@ func OutputArt(inputTXT, font string) (string, error) {
 			m += string(l)
 		}
 	}
+	inputTXTarray := strings.Split(inputTXT, "\n")
 	for i := 1; i <= 8; i++ {
-		for _, a := range inputTXT {
-			if int(a) < 32 || int(a) > 126 {
-				return "", errors.New("Invalid input")
-			} else {
-				outputstr += (art[(int(a)-32)*9+i])
+		for _, s := range inputTXTarray {
+			for _, a := range s {
+				if int(a) < 32 || int(a) > 126 {
+					return "", "Invalid input"
+				} else {
+					outputstr += (art[(int(a)-32)*9+i])
+				}
 			}
 		}
 		outputstr += "\n"
 	}
-	return outputstr, nil
+	return outputstr, ""
 }
