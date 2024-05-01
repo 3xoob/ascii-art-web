@@ -21,37 +21,37 @@ func main() {
 
 func GetHandler(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/" {
-		errorHandler(w, r, http.StatusNotFound, "")
+		ErrorHandler(w, r, http.StatusNotFound, "")
 		return
 	}
 	if r.Method != "GET" {
-		errorHandler(w, r, http.StatusMethodNotAllowed, "")
+		ErrorHandler(w, r, http.StatusMethodNotAllowed, "")
 		return
 	}
 
 	tmpl, err := template.ParseFiles("Templates/index.html")
 	if err != nil {
-		errorHandler(w, r, http.StatusInternalServerError, "")
+		ErrorHandler(w, r, http.StatusInternalServerError, "")
 		return
 	}
 
 	err = tmpl.Execute(w, output)
 	if err != nil {
-		errorHandler(w, r, http.StatusInternalServerError, "")
+		ErrorHandler(w, r, http.StatusInternalServerError, "")
 	}
 }
 
 func PostHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
-		errorHandler(w, r, http.StatusMethodNotAllowed, "")
+		ErrorHandler(w, r, http.StatusMethodNotAllowed, "")
 		return
 	}
 
 	input := r.FormValue("text")
 	font := r.FormValue("fonts")
-	input = TextCleaner(input)
+	input =strings.ReplaceAll(strings.ReplaceAll(input, "\\t", "    "), "\r", "\n")
 	if input == "" {
-		errorHandler(w, r, http.StatusBadRequest, "Please make sure you enter a text")
+		ErrorHandler(w, r, http.StatusBadRequest, "Please make sure you enter a text")
 		return
 	}
 
@@ -59,14 +59,14 @@ func PostHandler(w http.ResponseWriter, r *http.Request) {
 
 	output, err = OutputArt(input, font)
 	if err != "" {
-		errorHandler(w, r, http.StatusBadRequest, err)
+		ErrorHandler(w, r, http.StatusBadRequest, err)
 		return
 	}
 
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
-func errorHandler(w http.ResponseWriter, r *http.Request, statusCode int, errM string) {
+func ErrorHandler(w http.ResponseWriter, r *http.Request, statusCode int, errM string) {
 	var errorMessage string
 
 	switch statusCode {
@@ -113,10 +113,6 @@ func openBrowser(URL string) {
 		panic(err)
 	}
 }
-func TextCleaner(inText string) string {
-	inText = strings.ReplaceAll(inText, "\\t", "    ")
-	return strings.ReplaceAll(inText, "\r", "\n")
-}
 
 func OutputArt(inputTXT, font string) (string, string) {
 	outputstr := ""
@@ -134,9 +130,11 @@ func OutputArt(inputTXT, font string) (string, string) {
 			m += string(l)
 		}
 	}
+
 	inputTXTarray := strings.Split(inputTXT, "\n")
-	for i := 1; i <= 8; i++ {
-		for _, s := range inputTXTarray {
+
+	for _, s := range inputTXTarray {
+		for i := 1; i <= 8; i++ {
 			for _, a := range s {
 				if int(a) < 32 || int(a) > 126 {
 					return "", "Invalid input"
@@ -144,6 +142,7 @@ func OutputArt(inputTXT, font string) (string, string) {
 					outputstr += (art[(int(a)-32)*9+i])
 				}
 			}
+			outputstr += "\n"
 		}
 		outputstr += "\n"
 	}
