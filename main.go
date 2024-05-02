@@ -49,7 +49,7 @@ func PostHandler(w http.ResponseWriter, r *http.Request) {
 
 	input := r.FormValue("text")
 	font := r.FormValue("fonts")
-	input =strings.ReplaceAll(strings.ReplaceAll(input, "\\t", "    "), "\r", "\n")
+	input = strings.ReplaceAll(strings.ReplaceAll(input, "\\t", "    "), "\r", "\n")
 	if input == "" {
 		ErrorHandler(w, r, http.StatusBadRequest, "Please make sure you enter a text")
 		return
@@ -77,6 +77,7 @@ func ErrorHandler(w http.ResponseWriter, r *http.Request, statusCode int, errM s
 		//400
 		errorMessage = "Bad request"
 		if errM != "" {
+			//400 with extra message
 			errorMessage += ": " + errM
 		}
 	case http.StatusInternalServerError:
