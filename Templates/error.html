@@ -13,22 +13,43 @@
             align-items: center;
             height: 100vh;
             margin: 0;
-            background-color: #FFB6C1;
+            background-color: white;
         }
         .error-container {
-            font-size: 50px;
+            font-size: 40px;
             text-align: center;
         }
         h1 {
-            color: #ff0000;
+            font-size: 15vw;
+            background-image: url(https://unsplash.it/800);
+            background-size: cover;
+            background-clip: text;
+            -webkit-background-clip: text;
+            
+  }
+
+        #errorb {
+            color: white;
+            border: 2px solid #ffffff;
+            padding: 8px 16px;
+            font-size: 16px;
+            transition: box-shadow 0.2s ease-in-out;
+            text-decoration: underline ;
+            font-weight: bold;
+            background-color:  black;
+        }
+        #errorb:hover {
+            background: radial-gradient(black ,rgba(6, 6, 6, 0.2) 80%);
+            box-shadow: 0 0 10px white;
         }
     </style>
 </head>
 <body>
     <div class="error-container">
-        <h1>{{.ErrorCode}} - ERROR</h1>
+        <h1>Oops!</h1>
+        <p>{{.ErrorCode}} - ERROR</p>
         <p>{{.ErrorMessage}}</p>
-        <button style="padding: 8px 16px; font-size: 16px;" onclick="window.location.href = 'http://localhost:8080/'">Go to Main Page</button>
+        <button id="errorb" onclick="window.location.href = 'http://localhost:8080/'">Go to Main Page</button>
     </div>
 </body>
 </html>
