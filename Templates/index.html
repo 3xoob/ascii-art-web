@@ -5,33 +5,56 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <header>ASCII-ART-WEB</header>
     <title>Ascii Art Web</title>
-    <link rel="stylesheet" href="/Templates/style.css">
-   
 </head>
 <body>
+    <style>
+        header {
+            font-size: 100px;
+            font-weight: bold;
+            text-align: center;
+            background-color: #FFB6C1;
+        }
+        body {
+            font-size: 20px;
+            background-color: #FFB6C1;
+            font-family: 'Oswald', sans-serif;
+            text-align: center;
+        }
+        #text, #output {
+            width: 80%; 
+            height: 200px;
+            padding: 10px;
+            margin: 10px auto;
+            border-radius: 10px;
+            background-color: #fff;
+            box-sizing: border-box;
+            overflow-y: auto;
+        }
+    </style>
+    
+    <div class="main"></div>
     <form method="POST" action="/ascii-art">
-          
         <label for="text" id="input">Please enter the text to generate</label><br>
-        <div class="input-container">
-            <div class="sss"></div>
-            <textarea class="input" name="text" style="font-size: 16px; width: 700px;" id="text" placeholder="ASCII Characters Only"></textarea>
-        </div><br>
-
+        <textarea name="text"  style="font-size: 16px;" id="text" placeholder="ASCII Characters Only"></textarea><br>
         <label for="fonts">Please choose the font that you want</label><br>
-        
-        <div class="labelat">
+        <div>
             <input type="radio" name="fonts" value="standard" id="standard">
             <label for="standard">Standard</label>
+        </div>
+        <div>
             <input type="radio" name="fonts" value="thinkertoy" id="thinkertoy">
             <label for="thinkertoy">Thinkertoy</label>
+        </div>
+        <div>
             <input type="radio" name="fonts" value="shadow" id="shadow">
             <label for="shadow">Shadow</label>
         </div>
         <div>
-            <input type="submit" style="padding: 8px 16px; font-size: 16px;" value="Generate" id="submit">
+            <input type="submit" style="padding: 8px 16px; font-size: 16px;"  value="Generate" id="submit">
         </div>
     </form>
     <div> 
+        
         <textarea name="output" id="output" cols="30" rows="10" readonly>{{.}}</textarea> 
     </div>
 </body>

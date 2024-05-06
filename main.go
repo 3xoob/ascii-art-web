@@ -1,21 +1,24 @@
 package main
+
 import (
 	"html/template"
 	"net/http"
 	"os"
 	"strings"
+
 	"github.com/skratchdot/open-golang/open"
 )
+
 var output string
 var err string
+
 func main() {
 	http.HandleFunc("/", GetHandler)
 	http.HandleFunc("/ascii-art", PostHandler)
-	http.Handle("/Templates/", http.StripPrefix("/Templates/", http.FileServer(http.Dir("Templates"))))
 	go openBrowser("http://localhost:8080/")
 	http.ListenAndServe(":8080", nil)
-	
 }
+
 func GetHandler(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/" {
 		ErrorHandler(w, r, http.StatusNotFound, "")
@@ -25,21 +28,25 @@ func GetHandler(w http.ResponseWriter, r *http.Request) {
 		ErrorHandler(w, r, http.StatusMethodNotAllowed, "")
 		return
 	}
+
 	tmpl, err := template.ParseFiles("Templates/index.html")
 	if err != nil {
 		ErrorHandler(w, r, http.StatusInternalServerError, "")
 		return
 	}
+
 	err = tmpl.Execute(w, output)
 	if err != nil {
 		ErrorHandler(w, r, http.StatusInternalServerError, "")
 	}
 }
+
 func PostHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
 		ErrorHandler(w, r, http.StatusMethodNotAllowed, "")
 		return
 	}
+
 	input := r.FormValue("text")
 	font := r.FormValue("fonts")
 	input = strings.ReplaceAll(strings.ReplaceAll(input, "\\t", "    "), "\r\n", "\n")
@@ -47,16 +54,21 @@ func PostHandler(w http.ResponseWriter, r *http.Request) {
 		ErrorHandler(w, r, http.StatusBadRequest, "Please make sure you enter a text")
 		return
 	}
+
 	font = "Fonts/" + font + ".txt"
+
 	output, err = OutputArt(input, font)
+
 	if err != "" {
 		ErrorHandler(w, r, http.StatusBadRequest, err)
 		return
 	}
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
+
 func ErrorHandler(w http.ResponseWriter, r *http.Request, statusCode int, errM string) {
 	var errorMessage string
+
 	switch statusCode {
 	case http.StatusNotFound:
 		//404
@@ -77,6 +89,7 @@ func ErrorHandler(w http.ResponseWriter, r *http.Request, statusCode int, errM s
 	default:
 		errorMessage = "Unexpected error"
 	}
+
 	data := struct {
 		ErrorCode    int
 		ErrorMessage string
@@ -84,20 +97,24 @@ func ErrorHandler(w http.ResponseWriter, r *http.Request, statusCode int, errM s
 		ErrorCode:    statusCode,
 		ErrorMessage: errorMessage,
 	}
+
 	tmpl, err := template.ParseFiles("Templates/error.html")
 	if err != nil {
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
+
 	w.WriteHeader(statusCode)
 	tmpl.Execute(w, data)
 }
+
 func openBrowser(URL string) {
 	err := open.Run(URL)
 	if err != nil {
 		panic(err)
 	}
 }
+
 func OutputArt(inputTXT, font string) (string, string) {
 	outputstr := ""
 	file, err := os.ReadFile(font)
